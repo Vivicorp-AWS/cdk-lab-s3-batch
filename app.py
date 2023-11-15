@@ -1,28 +1,58 @@
 #!/usr/bin/env python3
 import os
-
 import aws_cdk as cdk
-
-from cdk_lab_s3_batch.cdk_lab_s3_batch_stack import CdkLabS3BatchStack
-
+from stacks.top_stack import TopStack
+from stacks.ecr_stack import ECRStack
+from stacks.s3_stack import S3Stack
+from stacks.batch_stack import BatchStack
+from stacks.lambda_stack import LambdaStack
 
 app = cdk.App()
-CdkLabS3BatchStack(app, "CdkLabS3BatchStack",
-    # If you don't specify 'env', this stack will be environment-agnostic.
-    # Account/Region-dependent features and context lookups will not work,
-    # but a single synthesized template can be deployed anywhere.
 
-    # Uncomment the next line to specialize this stack for the AWS Account
-    # and Region that are implied by the current CLI configuration.
+# Create stacks
+top_stack = TopStack(
+    app, f"cdklab-top-stack",
+    description="CDK S3 & Batch Lab Top Stack",
+)
 
-    #env=cdk.Environment(account=os.getenv('CDK_DEFAULT_ACCOUNT'), region=os.getenv('CDK_DEFAULT_REGION')),
+ecr_stack = ECRStack(
+    top_stack, f"cdklab-ecr-stack",
+    description="CDK S3 & Batch Lab ECR Stack",
+)
 
-    # Uncomment the next line if you know exactly what Account and Region you
-    # want to deploy the stack to. */
+docker_image_asset = ecr_stack.docker_image_asset
+# [TODO]
+# self.docker_image.repository.grantPull(principal)
 
-    #env=cdk.Environment(account='123456789012', region='us-east-1'),
+s3_stack = S3Stack(
+    top_stack, f"cdklab-s3-stack",
+    description="CDK S3 & Batch Lab S3 Stack",
+)
+bucket_source = s3_stack.bucket_source
+bucket_destination = s3_stack.bucket_destination
+bucket_destination_name = bucket_destination.bucket_name
 
-    # For more information, see https://docs.aws.amazon.com/cdk/latest/guide/environments.html
-    )
+batch_stack = BatchStack(
+    top_stack, f"cdklab-batch-stack",
+    description="CDK S3 & Batch Lab Batch Stack",
+    docker_image_asset=docker_image_asset,
+    bucket_source=bucket_source,
+    bucket_destination=bucket_destination,
+)
+job_queue_arn = batch_stack.job_queue.job_queue_arn
+job_definition_arn = batch_stack.job_definition.job_definition_arn
+
+lambda_stack = LambdaStack(
+    top_stack, f"cdklab-lambda-stack",
+    description="CDK S3 & Batch Lab Lambda Stack",
+    job_queue_arn=job_queue_arn,
+    job_definition_arn=job_definition_arn,
+    bucket_destination_name=bucket_destination_name,
+    bucket_source=bucket_source,
+)
+
+batch_stack.add_dependency(s3_stack)
+batch_stack.add_dependency(ecr_stack)
+lambda_stack.add_dependency(batch_stack)
 
 app.synth()
