@@ -11,12 +11,12 @@ app = cdk.App()
 
 # Create stacks
 top_stack = TopStack(
-    app, f"cdklab-top-stack",
+    app, f"cdklab-s3batch",
     description="CDK S3 & Batch Lab Top Stack",
 )
 
 ecr_stack = ECRStack(
-    top_stack, f"cdklab-ecr-stack",
+    top_stack, f"ecr-stack",
     description="CDK S3 & Batch Lab ECR Stack",
 )
 
@@ -25,7 +25,7 @@ docker_image_asset = ecr_stack.docker_image_asset
 # self.docker_image.repository.grantPull(principal)
 
 s3_stack = S3Stack(
-    top_stack, f"cdklab-s3-stack",
+    top_stack, f"s3-stack",
     description="CDK S3 & Batch Lab S3 Stack",
 )
 bucket_source = s3_stack.bucket_source
@@ -33,7 +33,7 @@ bucket_destination = s3_stack.bucket_destination
 bucket_destination_name = bucket_destination.bucket_name
 
 batch_stack = BatchStack(
-    top_stack, f"cdklab-batch-stack",
+    top_stack, f"batch-stack",
     description="CDK S3 & Batch Lab Batch Stack",
     docker_image_asset=docker_image_asset,
     bucket_source=bucket_source,
