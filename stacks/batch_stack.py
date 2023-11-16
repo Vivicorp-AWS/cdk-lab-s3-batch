@@ -60,14 +60,14 @@ class BatchStack(NestedStack):
             vpc=vpc,
             vpc_subnets=ec2.SubnetSelection(subnet_type=ec2.SubnetType.PUBLIC),
         )
-        bucket_source.grant_read(ec2_compute_environment.service_role)
-        bucket_destination.grant_write(ec2_compute_environment.service_role)
+        # bucket_source.grant_read(ec2_compute_environment.service_role)
+        # bucket_destination.grant_write(ec2_compute_environment.service_role)
 
         self.job_queue.add_compute_environment(ec2_compute_environment, 1)
 
         self.job_definition = batch.EcsJobDefinition(self, "BatchECSJobDef",
             container=batch.EcsEc2ContainerDefinition(self, "BatchECSEC2ContainerJobDef",
-                image=ecs.ContainerImage.from_asset(docker_image_asset),
+                image=ecs.ContainerImage.from_docker_image_asset(docker_image_asset),
                 command=["/app/process.sh",],
                 memory=Size.mebibytes(512),
                 cpu=1
