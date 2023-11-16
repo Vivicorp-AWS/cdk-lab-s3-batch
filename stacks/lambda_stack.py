@@ -6,9 +6,9 @@ from aws_cdk import (
     RemovalPolicy,
     CfnOutput,
 )
-from aws_cdk.aws_batch import JobQueue, JobDefinition
 from aws_cdk.aws_s3 import Bucket
 from constructs import Construct
+import json
 
 class LambdaStack(NestedStack):
 
@@ -23,29 +23,29 @@ class LambdaStack(NestedStack):
             **kwargs) -> None:
         super().__init__(scope, id, **kwargs)
 
-        # Create Lambda layer
-        layer = _lambda.LayerVersion(
-            self, 'helper_layer',
-            code=_lambda.Code.from_asset("layer"),
-            description='Common helper utility',
-            compatible_runtimes=[
-                _lambda.Runtime.PYTHON_3_9,
-                _lambda.Runtime.PYTHON_3_10,
-                _lambda.Runtime.PYTHON_3_11],
-            removal_policy=RemovalPolicy.DESTROY
-            )
+        # # Create Lambda layer
+        # layer = _lambda.LayerVersion(
+        #     self, 'helper_layer',
+        #     code=_lambda.Code.from_asset("layer"),
+        #     description='Common helper utility',
+        #     compatible_runtimes=[
+        #         _lambda.Runtime.PYTHON_3_9,
+        #         _lambda.Runtime.PYTHON_3_10,
+        #         _lambda.Runtime.PYTHON_3_11],
+        #     removal_policy=RemovalPolicy.DESTROY
+        #     )
         
         function = _lambda.Function(
             self, "lambda_function",
             runtime=_lambda.Runtime.PYTHON_3_10,
-            layers=[layer],
+            # layers=[layer],
             handler="index.handler",
             code=_lambda.Code.from_asset("src/lambda_fn"),
-            environment={
-                "JOB_QUEUE_ARN", job_queue_arn,
-                "JOB_DEFINITION_ARN", job_definition_arn,
-                "BUCKET_DESTINATION", bucket_destination_name,
-                },
+            environment=dict(
+                    JOB_QUEUE_ARN=job_queue_arn,
+                    JOB_DEFINITION_ARN=job_definition_arn,
+                    BUCKET_DESTINATION=bucket_destination_name,
+                )
             )
         
         function.add_event_source(
