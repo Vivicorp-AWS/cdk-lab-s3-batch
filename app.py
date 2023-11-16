@@ -21,7 +21,7 @@ ecr_stack = ECRStack(
 )
 
 docker_image_asset = ecr_stack.docker_image_asset
-# [TODO]
+# [TODO] ?
 # self.docker_image.repository.grantPull(principal)
 
 s3_stack = S3Stack(
@@ -42,17 +42,17 @@ batch_stack = BatchStack(
 job_queue_arn = batch_stack.job_queue.job_queue_arn
 job_definition_arn = batch_stack.job_definition.job_definition_arn
 
-lambda_stack = LambdaStack(
-    top_stack, f"cdklab-lambda-stack",
-    description="CDK S3 & Batch Lab Lambda Stack",
-    job_queue_arn=job_queue_arn,
-    job_definition_arn=job_definition_arn,
-    bucket_destination_name=bucket_destination_name,
-    bucket_source=bucket_source,
-)
+# lambda_stack = LambdaStack(
+#     top_stack, f"cdklab-lambda-stack",
+#     description="CDK S3 & Batch Lab Lambda Stack",
+#     job_queue_arn=job_queue_arn,
+#     job_definition_arn=job_definition_arn,
+#     bucket_destination_name=bucket_destination_name,
+#     bucket_source=bucket_source,
+# )
 
-batch_stack.add_dependency(s3_stack)
-batch_stack.add_dependency(ecr_stack)
-lambda_stack.add_dependency(batch_stack)
+# batch_stack.add_dependency(s3_stack)
+# batch_stack.add_dependency(ecr_stack)
+# lambda_stack.add_dependency(batch_stack)
 
 app.synth()
