@@ -11,10 +11,10 @@ BUCKET_DESTINATION = os.environ['BUCKET_DESTINATION']
 
 def handler(event, context):
     for record in event['Records']:
-        bucket_name = record['s3']['bucket']['name']
-        object_key = record['s3']['object']['key']
-        logger.info(f"## Bucket Name = {bucket_name}")
-        logger.info(f"## Object Key = {object_key}")
+        BUCKET_NAME = record['s3']['bucket']['name']
+        OBJECT_KEY = record['s3']['object']['key']
+        logger.info(f"## Bucket Name = {BUCKET_NAME}")
+        logger.info(f"## Object Key = {OBJECT_KEY}")
     
     batch = boto3.client('batch')
 
@@ -23,10 +23,10 @@ def handler(event, context):
         jobQueue=JOB_QUEUE_ARN,
         jobDefinition=JOB_DEFINITION_ARN,
         containerOverrides={
-            "command": ["/app/process.sh", bucket_name, object_key, BUCKET_DESTINATION],
+            "command": [f"/app/process.sh {BUCKET_NAME} {OBJECT_KEY} {BUCKET_DESTINATION}"],
             # "environment": [
-            #     {"name": "BUCKET_NAME_SOURCE", "value": bucket_name},
-            #     {"name": "OBJECT_KEY", "value": object_key},
+            #     {"name": "BUCKET_NAME_SOURCE", "value": BUCKET_NAME},
+            #     {"name": "OBJECT_KEY", "value": OBJECT_KEY},
             #     {"name": "BUCKET_DESTINATION", "value": BUCKET_DESTINATION}
             # ]
         })
